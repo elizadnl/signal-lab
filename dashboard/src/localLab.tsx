@@ -44,7 +44,8 @@ function parseDate(raw: string): string | null {
   if (/^\d+(\.0+)?$/.test(v)) {
     let n = Number(v)
     if (!Number.isFinite(n)) return null
-    if (n > 1e14) n /= 1000 // microseconds -> milliseconds
+    if (n > 1e17) n /= 1_000_000 // nanoseconds -> milliseconds
+    else if (n > 1e14) n /= 1000 // microseconds -> milliseconds
     else if (n < 1e11) n *= 1000 // seconds -> milliseconds
     const d = new Date(n)
     return Number.isFinite(d.getTime()) ? d.toISOString().slice(0,10) : null
@@ -175,7 +176,7 @@ function LabChart({points}:{points:LabPoint[]}) {
 }
 
 export default function LocalLab() {
-  const [open,setOpen]=useState(false)
+  const [open,setOpen]=useState(true)
   const [rows,setRows]=useState<MarketRow[]>([])
   const [source,setSource]=useState('')
   const [signalName,setSignalName]=useState('momentum')
