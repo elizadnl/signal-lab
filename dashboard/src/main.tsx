@@ -6,7 +6,6 @@ import {
 } from 'lucide-react'
 import type { Payload, Point, Run } from './types'
 import './styles.css'
-import LocalLab from './localLab'
 
 const signalLabels: Record<string, string> = {
   momentum: 'Momentum',
@@ -350,17 +349,28 @@ function App() {
 
   return <main className="shell">
     <header>
-      <div className="brand"><div className="brandmark"><BrainCircuit size={20}/></div><div><strong>SignalLab</strong><span>MARKET REGIME & STRATEGY INTELLIGENCE</span></div></div>
+      <div className="brand"><div className="brandmark"><BrainCircuit size={20}/></div><div><strong>SignalLab</strong><span>SYSTEMATIC SIGNAL RESEARCH</span></div></div>
       <div className="header-right">
-        <div className={`source-badge ${isDemo ? 'demo' : 'real'}`} title={isDemo ? payload.data_source?.claim_status : `Public data${audit?.end_date ? ` through ${audit.end_date}` : ''}`}><FlaskConical size={14}/>{isDemo ? (payload.data_source?.label ?? 'Offline demo') : <>LIVE PUBLIC DATA{audit?.end_date ? <span className="source-through">through {audit.end_date}</span> : null}</>}</div>
+        <div className={`source-badge ${isDemo ? 'demo' : 'real'}`}><FlaskConical size={14}/>{payload.data_source?.label ?? 'Local data'}</div>
         {audit && <div className={`quality-badge ${audit.clean ? 'clean' : 'warn'}`}><ShieldCheck size={14}/>{audit.clean ? 'DATA AUDIT CLEAN' : 'DATA AUDIT FLAGGED'}</div>}
-        <div className="method"><MousePointer2 size={16}/> interactive research console</div>
+        <div className="method"><MousePointer2 size={16}/> interactive quant workbench</div>
       </div>
     </header>
 
     {isDemo && <section className="demo-banner"><Sparkles size={15}/><strong>Offline demo.</strong> {payload.data_source.claim_status}. The interface is real; the displayed P&amp;L is illustrative until the public-data build is run.</section>}
 
-    <LocalLab/>
+    <section className="product-hero">
+      <div className="hero-copy">
+        <span className="hero-kicker">OUT-OF-SAMPLE RESEARCH ENGINE</span>
+        <h1>Stress-test the signal,<br/><span>not the story.</span></h1>
+        <p>Walk-forward validation, implementation stress and cross-asset evidence in one interactive research console.</p>
+      </div>
+      <div className="hero-context">
+        <span>CURRENT EXPERIMENT</span>
+        <strong>{asset.replace('USDT','')} · {signalLabels[signal] ?? signal}</strong>
+        <div><em>{mode === 'walk_forward' ? 'Walk-forward' : 'In-sample'}</em><i>•</i><em>{fee} bps costs</em><i>•</i><em>{run.start_date.slice(0,4)}–{run.end_date.slice(0,4)}</em></div>
+      </div>
+    </section>
 
     <section className="filters">
       <label>Asset<select value={asset} onChange={e=>{setAsset(e.target.value);setFocusedYear(null)}}>{assets.map(x=><option key={x}>{x}</option>)}</select></label>
@@ -386,7 +396,7 @@ function App() {
         <SparkChart points={visibleEquity} />
       </div>
       <div className="panel metrics-panel">
-        <div className="panel-heading"><div><span className="eyebrow">CORE METRICS</span><h2>Research snapshot</h2></div><Gauge size={17}/></div>
+        <div className="panel-heading"><div><span className="eyebrow">CORE METRICS</span><h2>Signal snapshot</h2></div><Gauge size={17}/></div>
         <div className="metric-stack">
           <MetricCard label="ANNUALISED RETURN" value={pct(m.annualized_return)} tone={m.annualized_return>=0?'green':'red'} />
           <MetricCard label="SHARPE RATIO" value={num(m.sharpe)} tone={m.sharpe>=1?'green':'neutral'} />
@@ -485,7 +495,7 @@ function App() {
       <div><span>7d block-bootstrap + 20-spec reality check + cross-asset gate</span></div>
     </section>
 
-    <footer><span>SignalLab v{payload.version ?? '0.8'}</span><span>Research software — not investment advice.</span></footer>
+    <footer><span>SignalLab v{payload.version ?? '0.7'}</span><span>Research software — not investment advice.</span></footer>
   </main>
 }
 
