@@ -1,0 +1,24 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
+
+node_modules/
+dashboard/dist/
+
+# Real market data is reproducible from the downloader and should not be committed.
+data/raw/*
+data/processed/*.csv
+data/processed/DATA_SOURCE.json
+
+# Keep directory structure
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+
+# Locally-built empirical dashboard payload
+dashboard/public/results.json
