@@ -77,23 +77,48 @@ def fetch_month(symbol: str, month: str, verify_checksum: bool = True) -> tuple[
 def normalize(frames: list[pd.DataFrame]) -> pd.DataFrame:
     df = pd.concat(frames, ignore_index=True)
     t = pd.to_numeric(df["open_time"], errors="coerce")
-    unit = "us" if t.median() > 1e14 else "ms"
+
+    dates = pd.Series(pd.NaT, index=df.index, dtype="datetime64[ns, UTC]")
+
+    ms_mask = t < 1e14
+    us_mask = t >= 1e14
+
+    dates.loc[ms_mask] = pd.to_datetime(
+        t.loc[ms_mask],
+        unit="ms",
+        utc=True,
+        errors="coerce",
+    )
+
+    dates.loc[us_mask] = pd.to_datetime(
+        t.loc[us_mask],
+        unit="us",
+        utc=True,
+        errors="coerce",
+    )
+
     out = pd.DataFrame({
-        "date": pd.to_datetime(t, unit=unit, utc=True),
+        "date": dates,
         "open": pd.to_numeric(df["open"], errors="coerce"),
         "high": pd.to_numeric(df["high"], errors="coerce"),
         "low": pd.to_numeric(df["low"], errors="coerce"),
         "close": pd.to_numeric(df["close"], errors="coerce"),
         "volume": pd.to_numeric(df["volume"], errors="coerce"),
     })
-    return out.dropna().sort_values("date").drop_duplicates("date").reset_index(drop=True)
+
+    return (
+        out.dropna()
+        .sort_values("date")
+        .drop_duplicates("date")
+        .reset_index(drop=True)
+    )
 
 
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--symbols", nargs="+", default=["BTCUSDT", "ETHUSDT", "SOLUSDT"])
     p.add_argument("--start", default="2021-01")
-    default_end = str(pd.Timestamp.utcnow().tz_localize(None).to_period("M") - 1)
+    default_end = str(pd.Timestamp.now("UTC").tz_localize(None).to_period("M") - 1)
     p.add_argument("--end", default=default_end)
     p.add_argument("--output-dir", default="data/processed")
     p.add_argument("--no-checksum", action="store_true", help="Skip Binance SHA-256 checksum verification")
@@ -129,7 +154,7 @@ def main() -> None:
         "symbols": symbols,
         "requested_start_month": args.start,
         "requested_end_month": args.end,
-        "retrieved_at_utc": pd.Timestamp.utcnow().isoformat(),
+        "retrieved_at_utc": pd.Timestamp.now("UTC").isoformat(),
         "checksum_verification": not args.no_checksum,
         "provenance": provenance,
     }
